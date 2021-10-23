@@ -4,7 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 import glob
 import json
-
+from flask import send_file
 
 app = Flask(__name__)
 
@@ -41,12 +41,25 @@ def files():
         my_files = glob.glob(UPLOAD_FOLDER+"/*")
         my_files_list = []
         for f in my_files:
-            my_files_list.append({"name" : f, "url": "https://www.google.com/"})
+            filename = f[len(UPLOAD_FOLDER):]
+            my_files_list.append({"name" : filename[1:], "url": request.base_url+filename})
         response.response = json.dumps(my_files_list)
         return _corsify_actual_response(response)
 
     return str(request.form)
     
+@app.route("/files/<filename>", methods = ['GET', 'OPTIONS'])
+def files_file(filename):
+
+    if request.method == "OPTIONS": # CORS preflight
+        return _build_cors_preflight_response()
+    else:
+        try:
+            response = send_file(UPLOAD_FOLDER +"/"+ filename, attachment_filename=filename)
+            return _corsify_actual_response(response)
+        except Exception as e:
+            return str(e)
+
 def _build_cors_preflight_response():
     response = make_response()
     response.headers.add("Access-Control-Allow-Origin", "*")
