@@ -15,10 +15,12 @@ from werkzeug.utils import secure_filename
 import re
 from file_handler import handle_zip
 import json
+import os
+url = os.environ.get('CLEARDB_DATABASE_URL', None)
 
 app = Flask(__name__)
 c = CORS(app)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://b794913adb6067:f74737a4@us-cdbr-east-04.cleardb.com/heroku_7bd5920a9867d35"
+app.config["SQLALCHEMY_DATABASE_URI"] = url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size' : 100, 'pool_recycle' : 280}
 
