@@ -1,0 +1,14 @@
+CREATE TABLE `heroku_7bd5920a9867d35`.`experiments` (
+  `experiment_id` INT NOT NULL AUTO_INCREMENT,
+  `experiment_type` INT NOT NULL,
+  `experiment_date` DATE NULL,
+  `experiment_author` VARCHAR(45) NULL,
+  `experiment_result` INT NULL,
+  `experiment_rawdata` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`experiment_id`),
+  INDEX `types_id_idx` (`experiment_type` ASC),
+  CONSTRAINT `types_id`
+    FOREIGN KEY (`experiment_type`)
+    REFERENCES `heroku_7bd5920a9867d35`.`sample_types` (`types_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
