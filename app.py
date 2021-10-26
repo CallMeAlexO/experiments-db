@@ -16,7 +16,7 @@ import re
 from file_handler import handle_zip
 import json
 import os
-url = os.environ.get('CLEARDB_DATABASE_URL', None)
+url = os.environ.get('CLEARDB_DATABASE_URL', "").split("?")[0]
 
 app = Flask(__name__)
 c = CORS(app)
