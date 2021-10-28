@@ -7,17 +7,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 import datetime
-from sqlalchemy.dialects.mysql.types import TINYTEXT
 from sqlalchemy import ForeignKey
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-from werkzeug.utils import secure_filename
 import re
 from file_handler import handle_zip
 import json
 import os
-url = os.environ.get('CLEARDB_DATABASE_URL', "").split("?")[0]
 
+url = os.environ.get('CLEARDB_DATABASE_URL', "").split("?")[0]
 app = Flask(__name__)
 c = CORS(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = url
@@ -27,19 +23,8 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size' : 100, 'pool_recycle' : 2
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-
-
 UPLOAD_FOLDER = "./uploads"
 
-class Articles(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
-    body = db.Column(db.Text())
-    date = db.Column(db.DateTime, default=datetime.datetime.now)
-
-    def __init__(self, title, body):
-        self.title = title
-        self.body = body
 
 class Sample_Types(db.Model):
     __tablename__ = 'sample_types'
@@ -49,6 +34,7 @@ class Sample_Types(db.Model):
 
     def __init__(self, name):
         self.types_name = name
+
 
 class Experiments(db.Model):
     __tablename__ = 'experiments'
@@ -83,13 +69,14 @@ class ExperimentSchema(ma.Schema):
         fields = ("experiment_id", "experiment_type", "experiment_date", "experiment_author", "experiment_result", "experiment_rawdata")
 
 
+class TypeSchema(ma.Schema):
+    class Meta:
+        fields = ("types_id", "types_name")
+
 article_schema = ArticleSchema()
 articles_schema = ArticleSchema(many=True)
 experiment_schema = ExperimentSchema()
-
-@app.route("/")
-def index():
-    return "Hello World!"
+experiments_schema = ExperimentSchema(many=True)
 
 
 def api_error(e):
@@ -101,6 +88,11 @@ def api_error(e):
     return jsonify({"success": False, "error": e.__cause__})
 
 
+@app.route("/")
+def index():
+    return "Hello World!"
+
+
 @app.route("/upload", methods=["POST"])
 def add_experiment():
 
@@ -110,7 +102,6 @@ def add_experiment():
     author = request.args.get("author", None)
     result = request.args.get("result", None)
     date = request.args.get("date", None)
-
 
     if mimetype == "application/x-zip-compressed" or mimetype == "application/zip":
         # Get raw data
@@ -134,23 +125,42 @@ def add_experiment():
         except Exception as g:
             return api_error(g)
 
-
-        payload = {"author": exp.experiment_author,
-                   "type": exp.experiment_type,
-                   "result": exp.experiment_result,
-                   "date": exp.experiment_date,
-                   "id": exp.experiment_id
-                   }
+        payload = {
+            "id": exp.experiment_id,
+            "author": exp.experiment_author,
+            "type": exp.experiment_type,
+            "date": exp.experiment_date,
+            "result": exp.experiment_result
+        }
         return jsonify({"success": True, "data": payload})
     else:
-        return "TODO: Implement your mimetype"
+        return jsonify({"success": False, "data": f"Content-type '{mimetype}' not supported"})
 
 
 @app.route("/get/<experiment_id>", methods = ['GET'])
-def files(experiment_id):
+def get_one(experiment_id):
     exp = Experiments.query.get(experiment_id)
     results = experiment_schema.dump(exp)
-    return jsonify(results)
+    return jsonify({"success": True, "data": results})
+
+
+@app.route("/get", methods = ['GET'])
+def get_all():
+    exp = Experiments.query.add_columns(Experiments.experiment_id,
+                                        Experiments.experiment_author,
+                                        Experiments.experiment_type,
+                                        Experiments.experiment_date,
+                                        Experiments.experiment_result).all()
+    results = experiments_schema.dump(exp)
+    return jsonify({"success": True, "data": results})
+
+
+@app.route("/types", methods = ['GET'])
+def get_all_types():
+    exp = Sample_Types.query.all()
+    results = TypeSchema(many=True).dump(exp)
+    return jsonify({"success": True, "data": results})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
