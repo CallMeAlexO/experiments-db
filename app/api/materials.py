@@ -22,3 +22,11 @@ def generate_materials():
 @bp.route('/materials/<int:id>', methods=['GET'])
 def get_material(id):
     return jsonify(Material.query.get_or_404(id).to_dict())
+
+
+@bp.route('/materials', methods=['GET'])
+def get_materials():
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    data = Material.to_collection_dict(Material.query, page, per_page, 'api.get_materials')
+    return jsonify(data)
