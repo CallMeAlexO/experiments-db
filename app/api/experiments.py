@@ -11,13 +11,13 @@ from file_handler import handle_zip
 
 @bp.route('/experiments/generate', methods=['GET'])
 def generate_experiments():
-    db.session.add(Experiment(material=3, author_id=6, result=1, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=7, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=6, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=2, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=2, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=5, rawdata=""))
-    db.session.add(Experiment(material=3, author_id=6, result=9, rawdata=""))
+    db.session.add(Experiment(material=3, author_id=6, result=1))
+    db.session.add(Experiment(material=3, author_id=6, result=7))
+    db.session.add(Experiment(material=3, author_id=6, result=6))
+    db.session.add(Experiment(material=3, author_id=6, result=2))
+    db.session.add(Experiment(material=3, author_id=6, result=2))
+    db.session.add(Experiment(material=3, author_id=6, result=5))
+    db.session.add(Experiment(material=3, author_id=6, result=9))
     db.session.commit()
     return jsonify(Experiment.query.get_or_404(1).to_dict())
 

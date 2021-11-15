@@ -1,14 +1,46 @@
+CREATE TABLE `heroku_7bd5920a9867d35`.`materials` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` TINYTEXT NULL,
+  PRIMARY KEY (`id`));
+
+
+CREATE TABLE `heroku_7bd5920a9867d35`.`authors` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` TINYTEXT NULL,
+  `email` TINYTEXT NULL,
+  PRIMARY KEY (`id`));
+
 CREATE TABLE `heroku_7bd5920a9867d35`.`experiments` (
-  `experiment_id` INT NOT NULL AUTO_INCREMENT,
-  `experiment_type` INT NOT NULL,
-  `experiment_date` DATE NULL,
-  `experiment_author` VARCHAR(45) NULL,
-  `experiment_result` INT NULL,
-  `experiment_rawdata` MEDIUMTEXT NOT NULL,
-  PRIMARY KEY (`experiment_id`),
-  INDEX `types_id_idx` (`experiment_type` ASC),
-  CONSTRAINT `types_id`
-    FOREIGN KEY (`experiment_type`)
-    REFERENCES `heroku_7bd5920a9867d35`.`sample_types` (`types_id`)
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `material` INT NOT NULL,
+  `timestamp` DATE NULL,
+  `author_id` INT NOT NULL,
+  `result` INT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `author_id_idx` (`author_id` ASC),
+  INDEX `material_id_idx` (`material` ASC),
+  CONSTRAINT `author_id`
+    FOREIGN KEY (`author_id`)
+    REFERENCES `heroku_7bd5920a9867d35`.`authors` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `material_id`
+    FOREIGN KEY (`material`)
+    REFERENCES `heroku_7bd5920a9867d35`.`materials` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+
+CREATE TABLE `heroku_7bd5920a9867d35`.`rawdata` (
+  `id` INT NOT NULL,
+  `experiment_id` INT NOT NULL,
+  `data_type` INT NULL,
+  `vector` INT NULL,
+  `data` LONGBLOB NULL,
+  PRIMARY KEY (`id`),
+  INDEX `experiment_id_idx` (`experiment_id` ASC),
+  CONSTRAINT `original_id`
+    FOREIGN KEY (`experiment_id`)
+    REFERENCES `heroku_7bd5920a9867d35`.`experiments` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
