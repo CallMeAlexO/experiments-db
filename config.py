@@ -7,3 +7,4 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'local.db')
     SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.split("?")[0]
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 100, 'pool_recycle': 280}
