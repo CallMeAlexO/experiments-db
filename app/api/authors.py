@@ -8,12 +8,13 @@ from sqlalchemy.exc import IntegrityError
 @bp.route('/authors/generate', methods=['GET'])
 def generate_authors():
     log.debug(f"ENTER /authors/generate")
-    db.session.add(Author(name="Osheter Alexey"))
-    db.session.add(Author(name="Osheter Tatiana"))
-    db.session.add(Author(name="Campisi-Pinto Saro"))
-    db.session.add(Author(name="Ashkenazi Hen"))
-    db.session.add(Author(name="Yotvat Meiron"))
-    db.session.add(Author(name="Abramowitz Janna"))
+    db.session.add(Author(name="Zeev Weisman", email="zeev.weisman@gmail.com"))
+    db.session.add(Author(name="Osheter Alexey", email="alexeyo@post.bgu.ac.il"))
+    db.session.add(Author(name="Osheter Tatiana", email="osheter@post.bgu.ac.il"))
+    db.session.add(Author(name="Campisi-Pinto Saro", email="saro.campisi@gmail.com"))
+    db.session.add(Author(name="Ashkenazi Hen", email="henash@post.bgu.ac.il"))
+    db.session.add(Author(name="Abramowitz Janna", email="janna@bgu.ac.il"))
+    db.session.add(Author(name="Shoshana Kravchik", email="kravch@bgu.ac.il"))
 
     try:
         db.session.commit()
