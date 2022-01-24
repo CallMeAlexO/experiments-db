@@ -1,8 +1,10 @@
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
+import logging
 
 db = SQLAlchemy()
+log = logging
 
 
 def create_app(config_class=Config):
