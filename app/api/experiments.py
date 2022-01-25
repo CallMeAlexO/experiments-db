@@ -3,33 +3,35 @@ import zlib
 from datetime import datetime
 
 from flask import jsonify, request, url_for, abort, json
+from sqlalchemy.exc import IntegrityError
+
 from app import db
-from app.models import Experiment, Author, ExperimentData
+from app.models import NmrExperiment, Author, ExperimentData, Experiment, Batch
 from app.api import bp
 from file_handler import handle_zip
 
 
 @bp.route('/experiments/generate', methods=['GET'])
 def generate_experiments():
-    db.session.add(Experiment(material=3, author_id=6, result=1))
-    db.session.add(Experiment(material=3, author_id=6, result=7))
-    db.session.add(Experiment(material=3, author_id=6, result=6))
-    db.session.add(Experiment(material=3, author_id=6, result=2))
-    db.session.add(Experiment(material=3, author_id=6, result=2))
-    db.session.add(Experiment(material=3, author_id=6, result=5))
-    db.session.add(Experiment(material=3, author_id=6, result=9))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=1))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=7))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=6))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=2))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=2))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=5))
+    db.session.add(NmrExperiment(material=3, author_id=6, result=9))
     db.session.commit()
-    return jsonify(Experiment.query.get_or_404(1).to_dict())
+    return jsonify(NmrExperiment.query.get_or_404(1).to_dict())
 
 
 @bp.route('/experiments/<int:id>', methods=['GET'])
 def get_experiment(id):
-    return jsonify(Experiment.query.get_or_404(id).to_dict(include_rawdata=True))
+    return jsonify(NmrExperiment.query.get_or_404(id).to_dict(include_rawdata=True))
 
 
 @bp.route('/experiments/<int:id>/<string:type>', methods=['GET'])
 def get_experiment_data(id, type):
-    data = Experiment.query.get_or_404(id).get_type(type)
+    data = NmrExperiment.query.get_or_404(id).get_type(type)
     if data is None: return abort(404)
     return data.to_dict()
 
@@ -48,9 +50,9 @@ def get_experiments():
 
     query = Experiment.query
     if author:
-        query = query.filter(Experiment.author_id == author)
+        query = query.filter(NmrExperiment.author_id == author)
     if material:
-        query = query.filter(Experiment.material == material)
+        query = query.filter(NmrExperiment.material_id == material)
     if sort_by:
         try:
             col, order = sort_by.split("_")
@@ -59,23 +61,23 @@ def get_experiments():
 
         if col == "material":
             if order == "asc":
-                query = query.order_by(Experiment.id.asc())
+                query = query.order_by(NmrExperiment.experiment_id.asc())
             elif order == "desc":
-                query = query.order_by(Experiment.id.desc())
+                query = query.order_by(NmrExperiment.experiment_id.desc())
             else:
                 return jsonify({"error": "'sort_by' requires a parameter of format [field]_asc or [field]_desc"})
         if col == "timestamp":
             if order == "asc":
-                query = query.order_by(Experiment.timestamp.asc())
+                query = query.order_by(NmrExperiment.timestamp.asc())
             elif order == "desc":
-                query = query.order_by(Experiment.timestamp.desc())
+                query = query.order_by(NmrExperiment.timestamp.desc())
             else:
                 return jsonify({"error": "'sort_by' requires a parameter of format [field]_asc or [field]_desc"})
         if col == "result":
             if order == "asc":
-                query = query.order_by(Experiment.result.asc())
+                query = query.order_by(NmrExperiment.result.asc())
             elif order == "desc":
-                query = query.order_by(Experiment.result.desc())
+                query = query.order_by(NmrExperiment.result.desc())
             else:
                 return jsonify({"error": "'sort_by' requires a parameter of format [field]_asc or [field]_desc"})
     if has_t1:
@@ -97,7 +99,11 @@ def add_experiments():
     author_id = request.args.get("author", None)
     result = request.args.get("result", None)
     date = request.args.get("date", None)
+    part_of = request.args.get("part_of", None)
+    batch_id = request.args.get("batch", None)
     exp = {}
+
+    allowed_types = ["nmr"]
 
     if mimetype == "application/x-zip-compressed" or mimetype == "application/zip":
         exp = handle_zip(file)
@@ -113,13 +119,43 @@ def add_experiments():
     except ValueError as e:
         author_id = Author.query.filter(Author.name.like(f"%{author_id}%")).first().id
 
-    experiment = Experiment(material=int(material),
-                            timestamp=date,
-                            author_id=author_id,
-                            result=int(result))
+    if batch_id:
+        try:
+            batch_id = int(batch_id)
+        except ValueError as e:
+            batch_id = Batch.query.filter(Batch.name.like(f"%{batch_id}%")).first().id
 
+    # This is validated in the program, not the DB because the program is the one that handles the various types.
+    if part_of is None or part_of not in allowed_types:
+        if part_of is None:
+            response = jsonify({"error": f"Field `part_of` cannot be empty"})
+        else:
+            response = jsonify({"error": f"Field `part_of` {part_of} not allowed"})
+        response.status_code = 400
+        return response
+
+    experiment = Experiment(material_id=int(material), timestamp=date, author_id=author_id, batch_id=batch_id, part_of=part_of)
     db.session.add(experiment)
-    db.session.commit()
+    try:
+        db.session.flush()
+    except IntegrityError as e:
+        error = e.orig.args[1].lower()
+        response = jsonify({"error": error})
+        response.status_code = 500
+        if e.orig.args[0] == 1452:
+            response.status_code = 400 # User error
+            if "batch" in error:
+                response = jsonify({"error": f"batch id {batch_id} does not exist"})
+            elif "author" in error:
+                response = jsonify({"error": f"author id {author_id} does not exist"})
+            elif "material" in error:
+                response = jsonify({"error": f"material id {material} does not exist"})
+        return response
+
+    if part_of == "nmr":
+        specific_experiment = NmrExperiment(nmrexp_id=experiment.id, result=result)
+        db.session.add(specific_experiment)
+        db.session.commit()
 
     if "T1_excel" in exp:
         t1_excel = ExperimentData(experiment_id=experiment.id, data_type=1, vector=1, data=exp.get("T1_excel"))

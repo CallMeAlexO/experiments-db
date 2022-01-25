@@ -1,46 +1,52 @@
-CREATE TABLE `heroku_7bd5920a9867d35`.`materials` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` TINYTEXT NULL,
-  PRIMARY KEY (`id`));
+CREATE TABLE `authors` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` tinytext,
+  `email` varchar(45) UNIQUE,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE `materials` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `heroku_7bd5920a9867d35`.`authors` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` TINYTEXT NULL,
-  `email` TINYTEXT NULL,
-  PRIMARY KEY (`id`));
+CREATE TABLE `batches` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `heroku_7bd5920a9867d35`.`experiments` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `material` INT NOT NULL,
-  `timestamp` DATE NULL,
-  `author_id` INT NOT NULL,
-  `result` INT NULL,
+CREATE TABLE `experiments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `material_id` int NOT NULL,
+  `author_id` int NOT NULL,
+  `batch_id` int DEFAULT NULL,
+  `timestamp` date DEFAULT NULL,
+  `part_of` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  INDEX `author_id_idx` (`author_id` ASC),
-  INDEX `material_id_idx` (`material` ASC),
-  CONSTRAINT `author_id`
-    FOREIGN KEY (`author_id`)
-    REFERENCES `heroku_7bd5920a9867d35`.`authors` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `material_id`
-    FOREIGN KEY (`material`)
-    REFERENCES `heroku_7bd5920a9867d35`.`materials` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+  FOREIGN KEY (`material_id`) REFERENCES `materials`(`id`),
+  FOREIGN KEY (`author_id`) REFERENCES `authors`(`id`),
+  FOREIGN KEY (`batch_id`) REFERENCES `batches`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
-CREATE TABLE `heroku_7bd5920a9867d35`.`rawdata` (
-  `id` INT NOT NULL,
-  `experiment_id` INT NOT NULL,
-  `data_type` INT NULL,
-  `vector` INT NULL,
-  `data` LONGBLOB NULL,
+CREATE TABLE `rawdata` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `experiment_id` int NOT NULL,
+  `data_type` int DEFAULT NULL,
+  `vector` int DEFAULT NULL,
+  `data` longblob,
   PRIMARY KEY (`id`),
-  INDEX `experiment_id_idx` (`experiment_id` ASC),
-  CONSTRAINT `original_id`
-    FOREIGN KEY (`experiment_id`)
-    REFERENCES `heroku_7bd5920a9867d35`.`experiments` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+  FOREIGN KEY (`experiment_id`) REFERENCES `experiments`(`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `nmr-experiments` (
+  `nmrexp_id` int NOT NULL,
+  `result` int DEFAULT NULL,
+  `peroxide_value` float DEFAULT NULL,
+  `diffusion_coefficient` float DEFAULT NULL,
+  `anisidine_value` float DEFAULT NULL,
+  `ox_time` int DEFAULT NULL,
+  PRIMARY KEY (`nmrexp_id`),
+  FOREIGN KEY (`nmrexp_id`) REFERENCES `experiments`(`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

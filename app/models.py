@@ -33,11 +33,12 @@ class Experiment(PaginatedAPIMixin, db.Model):
     __tablename__ = 'experiments'
 
     id = db.Column(db.Integer, primary_key=True)
-    material = db.Column(db.Integer, ForeignKey('materials.id'))
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
-    result = db.Column(db.Integer)
     experiments = db.relationship('ExperimentData', backref='raw_experiment', lazy='dynamic')
+    material_id = db.Column(db.Integer, ForeignKey('materials.id'))
+    batch_id = db.Column(db.Integer, ForeignKey('batches.id'))
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    part_of = db.Column(db.String(256), default=None)
 
     def __repr__(self):
         return '<Experiment {}>'.format(self.experiment_id)
@@ -45,7 +46,35 @@ class Experiment(PaginatedAPIMixin, db.Model):
     def to_dict(self, include_rawdata=False):
         data = {
             'id': self.id,
-            'type': self.material,
+            'type': self.material_id,
+            'timestamp': self.timestamp,
+            'author': self.author_id,
+            'batch': self.batch_id,
+            'vectors': [x.get_vector_name() for x in self.experiments.all()]
+        }
+        if include_rawdata:
+            pass
+        return data
+
+    def get_type(self, type):
+        data_type, vector = type.split("_")
+        data_type, vector = ExperimentData.str_to_data_type(data_type), ExperimentData.str_to_vector(vector)
+        return self.experiments.filter_by(vector=vector, data_type=data_type).first()
+
+
+class NmrExperiment(PaginatedAPIMixin, db.Model):
+    __tablename__ = 'nmr-experiments'
+
+    nmrexp_id = db.Column(db.Integer, db.ForeignKey('experiments.id'), primary_key=True)
+    result = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<NmrExperiment {}>'.format(self.experiment_id)
+
+    def to_dict(self, include_rawdata=False):
+        data = {
+            'id': self.experiment_id,
+            'type': self.material_id,
             'timestamp': self.timestamp,
             'author': self.author_id,
             'result': self.result,
@@ -67,7 +96,7 @@ class Author(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
     email = db.Column(db.String(120), index=True, unique=True)
-    experiments = db.relationship('Experiment', backref='author', lazy='dynamic')
+    experiments = db.relationship('Experiment', backref='backref_author', lazy='dynamic')
 
     def to_dict(self):
         data = {
@@ -92,6 +121,19 @@ class Material(PaginatedAPIMixin, db.Model):
         }
         return data
 
+class Batch(PaginatedAPIMixin, db.Model):
+    __tablename__ = 'batches'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+    experiments = db.relationship('Experiment', backref='backref_batch', lazy='dynamic')
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'name': self.name,
+        }
+        return data
 
 class ExperimentData(db.Model):
     __tablename__ = 'rawdata'
