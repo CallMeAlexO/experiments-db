@@ -1,3 +1,5 @@
 flaskapp
-__pycache__ 
-uploads
+__pycache__
+error.log
+.idea
+*.pyc
