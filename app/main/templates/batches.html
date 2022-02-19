@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Batches{% endblock %}
+
+{% block content %}
+<table id="data" class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Experiments</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for batch in batches %}
+    <tr>
+        <td>{{ batch.id }}</td>
+        <td>{{ batch.name }}</td>
+        <td>{{ batch.experiments }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if prev %}
+<a href="{{ prev }}">prev</a>
+{% endif %}
+
+{% if next %}
+<a href="{{ next }}">next</a>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+
+{% block content %}
+<ul>
+    <li><a href="{{ url_for('main.authors_frontend') }}">Authors</a></li>
+    <li><a href="{{ url_for('main.materials_frontend') }}">Materials</a></li>
+    <li><a href="{{ url_for('main.batches_frontend') }}">Batches</a></li>
+    <li><a href="{{ url_for('main.experiments_frontend') }}">Experiments</a></li>
+</ul>
+{% endblock %}

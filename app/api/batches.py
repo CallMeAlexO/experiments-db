@@ -8,8 +8,9 @@ from sqlalchemy.exc import IntegrityError
 @bp.route('/batches/generate', methods=['GET'])
 def generate_batches():
     log.debug(f"ENTER /batches/generate")
-    b = Batch(name="OX-OILS-80DC-21-11-28")
-    db.session.add(b)
+    for i in range(300):
+        b = Batch(name="TEST_BATCH"+str(i))
+        db.session.add(b)
 
     try:
         db.session.commit()

@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block title %}Upload{% endblock %}
+
+{% block content %}
+
+<form method="POST" action="/upload" enctype="multipart/form-data">
+    <div class="params-container">
+        <input class="field-container" type="file" name="file" accept="application/x-zip-compressed,application/zip">
+        <input class="field-container" type="submit" value="Submit">
+        <input class="field-container" type="hidden" name="part_of" value="nmr">
+    </div>
+    <p>Metadata</p>
+    <div class="params-container">
+        <div class="field-container">
+            <div>Author</div>
+            <select name="author" class="selectpicker form-control">
+                {% for o in authors %}
+                <option value="{{ o.id }}">{{ o.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field-container">
+            <div>Material</div>
+            <select name="material" class="selectpicker form-control">
+                {% for o in materials %}
+                <option value="{{ o.id }}">{{ o.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field-container">
+            <div>Batch ID</div>
+            <select name="batch" class="selectpicker form-control">
+                {% for o in batches %}
+                <option value="{{ o.id }}">{{ o.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field-container">
+            <div>Result</div>
+            <select name="result" class="selectpicker form-control">
+                <option value="0">GREEN</option>
+                <option value="1">YELLOW</option>
+                <option value="2">RED</option>
+            </select>
+        </div>
+        <div class="field-container">
+            <div>Date</div>
+            <input type="date" id="start" name="date">
+        </div>
+    </div>
+
+
+</form>
+
+{% endblock %}

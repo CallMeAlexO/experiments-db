@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>{% block title %}{% endblock %} - Biotech NMR</title>
+    {% endblock %}
+  </head>
+  <body>
+    <main id="content">{% block content %}{% endblock %}</main>
+    <footer>
+      <div class="footer">
+        {% block footer %}
+        Made with ♥ by <a href="http://biotech-nmr-lab.bgu.ac.il/">NMR Team</a>.
+        {% endblock %}
+      </div>
+    </footer>
+  </body>
+</html>
