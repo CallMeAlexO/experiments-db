@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block title %}Experiments{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Filters
+    </div>
+    <form class="card-body flex-container" method="POST" action="/experiments">
+        <a href="" class="btn btn-primary">New Experiment</a>
+
+        <select name="author" class="selectpicker form-control">
+            <option value="" disabled selected>Author</option>
+            {% for o in authors %}
+            <option value="{{ o.id }}">{{ o.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="material" class="selectpicker form-control">
+            <option value="" disabled selected>Material</option>
+            {% for o in materials %}
+            <option value="{{ o.id }}">{{ o.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="material" class="selectpicker form-control">
+            <option value="" disabled selected>Project</option>
+            {% for o in part_of %}
+            <option value="{{ o }}">{{ o }}</option>
+            {% endfor %}
+        </select>
+        <select name="material" class="selectpicker form-control">
+            <option value="" disabled selected>Batch</option>
+            {% for o in batches %}
+            <option value="{{ o.id }}">{{ o.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" id="experiment_date_start" name="date">
+        <input type="date" id="experiment_date_end" name="date">
+        <input type="text" name="search" placeholder="Search">
+<!--        <a href="" class="btn btn-primary">Filter</a>-->
+        <input class="field-container btn btn-primary" type="submit" value="Filter">
+
+    </form>
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Batch</th>
+        <th scope="col">Date</th>
+        <th scope="col">Author</th>
+        <th scope="col">Material</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for o in experiments %}
+    <tr>
+        <th scope="row">{{ o.id }}</th>
+        <td>{{o.batch}}</td>
+        <td>{{o.timestamp}}</td>
+        <td>{{o.author}}</td>
+        <td>{{o.material}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

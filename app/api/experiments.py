@@ -38,21 +38,26 @@ def get_experiment_data(id, type):
 
 @bp.route('/experiments', methods=['GET'])
 def get_experiments():
+    return get_experiments('api.get_experiments')
+
+
+def get_experiments(where_to):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     author = request.args.get('author', None, type=int)
-    material = request.args.get('type', None, type=int)
+    material = request.args.get('material', None, type=int)
     sort_by = request.args.get('sort_by', None, type=str)
+    batch_id = request.args.get('batch', None, type=str)
     has_t1 = request.args.get('has_t1', None, type=bool)
     has_t2 = request.args.get('has_t2', None, type=bool)
     has_2d = request.args.get('has_2d', None, type=bool)
 
     query = Experiment.query
     if author:
-        query = query.filter(NmrExperiment.author_id == author)
+        query = query.filter(Experiment.author_id == author)
     if material:
-        query = query.filter(NmrExperiment.material_id == material)
+        query = query.filter(Experiment.material_id == material)
     if sort_by:
         try:
             col, order = sort_by.split("_")
@@ -87,7 +92,7 @@ def get_experiments():
     if has_2d:
         query = query.join(ExperimentData).filter(ExperimentData.vector == 3)
 
-    data = Experiment.to_collection_dict(query, page, per_page, 'api.get_experiments')
+    data = Experiment.to_collection_dict(query, page, per_page, where_to)
     return jsonify(data)
 
 
@@ -97,7 +102,6 @@ def add_experiments():
     mimetype = file.content_type
     material = request.args.get("material", None)
     author_id = request.args.get("author", None)
-    result = request.args.get("result", None)
     date = request.args.get("date", None)
     part_of = request.args.get("part_of", None)
     batch_id = request.args.get("batch", None)
@@ -134,7 +138,11 @@ def add_experiments():
         response.status_code = 400
         return response
 
-    experiment = Experiment(material_id=int(material), timestamp=date, author_id=author_id, batch_id=batch_id, part_of=part_of)
+    experiment = Experiment(material_id=int(material),
+                            timestamp=date,
+                            author_id=author_id,
+                            batch_id=batch_id,
+                            part_of=part_of)
     db.session.add(experiment)
     try:
         db.session.flush()
@@ -143,7 +151,7 @@ def add_experiments():
         response = jsonify({"error": error})
         response.status_code = 500
         if e.orig.args[0] == 1452:
-            response.status_code = 400 # User error
+            response.status_code = 400  # User error
             if "batch" in error:
                 response = jsonify({"error": f"batch id {batch_id} does not exist"})
             elif "author" in error:
@@ -153,7 +161,16 @@ def add_experiments():
         return response
 
     if part_of == "nmr":
-        specific_experiment = NmrExperiment(nmrexp_id=experiment.id, result=result)
+        result = request.args.get("result", None)
+        peroxide_value = request.args.get("peroxide_value", None)
+        anisidine_value = request.args.get("anisidine_value", None)
+        diffusion_coefficient = request.args.get("diffusion_coefficient", None)
+        repetition = request.args.get("repetition", None)
+        ox_time = request.args.get("ox_time", None)
+        specific_experiment = NmrExperiment(nmrexp_id=experiment.id, result=result, peroxide_value=peroxide_value,
+                                            anisidine_value=anisidine_value,
+                                            diffusion_coefficient=diffusion_coefficient, repetition=repetition,
+                                            ox_time=ox_time)
         db.session.add(specific_experiment)
         db.session.commit()
 

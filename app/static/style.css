@@ -17,8 +17,13 @@ footer {
 /*****************/
 .field-container{
   float: left;
+  padding: 16px;
 }
 
 .params-container{
   overflow: hidden;
+}
+
+.flex-container{
+  flex-wrap: wrap;
 }

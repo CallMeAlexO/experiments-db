@@ -39,6 +39,7 @@ class Experiment(PaginatedAPIMixin, db.Model):
     batch_id = db.Column(db.Integer, ForeignKey('batches.id'))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
     part_of = db.Column(db.String(256), default=None)
+    author = db.relationship('Author', backref='author', viewonly=True)
 
     def __repr__(self):
         return '<Experiment {}>'.format(self.experiment_id)
@@ -48,9 +49,8 @@ class Experiment(PaginatedAPIMixin, db.Model):
             'id': self.id,
             'type': self.material_id,
             'timestamp': self.timestamp,
-            'author': self.author_id,
-            'batch': self.batch_id,
-            'vectors': [x.get_vector_name() for x in self.experiments.all()]
+            'author': self.author.name,
+            'batch': self.batch_id
         }
         if include_rawdata:
             pass
@@ -67,6 +67,11 @@ class NmrExperiment(PaginatedAPIMixin, db.Model):
 
     nmrexp_id = db.Column(db.Integer, db.ForeignKey('experiments.id'), primary_key=True)
     result = db.Column(db.Integer)
+    peroxide_value = db.Column(db.Float)
+    anisidine_value = db.Column(db.Float)
+    diffusion_coefficient = db.Column(db.Float)
+    repetition = db.Column(db.Integer)
+    ox_time = db.Column(db.Integer)
 
     def __repr__(self):
         return '<NmrExperiment {}>'.format(self.experiment_id)

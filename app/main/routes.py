@@ -2,9 +2,9 @@ from flask import render_template, request, url_for
 from sqlalchemy import func
 from werkzeug.utils import redirect
 
-from app.api.experiments import add_experiments
+from app.api.experiments import add_experiments, get_experiments
 from app.main import bp
-from app.models import Author, Material, Batch
+from app.models import Author, Material, Batch, Experiment
 
 
 @bp.route('/')
@@ -42,9 +42,21 @@ def batches_frontend():
     return render_template("batches.html", batches=batches["items"], prev=links["prev"], next=links["next"])
 
 
-@bp.route('/experiments')
+@bp.route('/experiments', methods=['GET', 'POST'])
 def experiments_frontend():
-    pass
+    authors = Author.query.all()
+    batches = Batch.query.all()
+    materials = Material.query.all()
+    part_of = ["nmr"]
+
+    if len(request.args) == 0:
+        request.args = request.form # Either user sent a request, or it came from the filter...
+
+    # experiments = Experiment.to_collection_dict(Experiment.query, page, per_page, 'api.get_experiments')
+    experiments = get_experiments('main.experiments_frontend').json
+
+    return render_template("experiments.html", authors=authors, batches=batches, materials=materials, part_of=part_of,
+                           experiments=experiments["items"])
 
 
 @bp.route('/upload')
@@ -59,6 +71,9 @@ def upload_frontend():
 def upload_post():
     request.args = request.form
     pp = add_experiments()
+    if pp.status_code != 201:
+        # TODO: Redirect to error page - explain the error
+        redirect(url_for('main.authors'))
     # uploaded_file = request.files['file']
     # if uploaded_file.filename != '':
     #     uploaded_file.save(uploaded_file.filename)

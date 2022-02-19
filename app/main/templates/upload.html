@@ -1,6 +1,26 @@
 {% extends "layout.html" %}
 {% block title %}Upload{% endblock %}
 
+{% block head %}
+{{super()}}
+<script>
+function docReady(fn) {
+    // see if DOM is already available
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        // call on next available tick
+        setTimeout(fn, 1);
+    } else {
+        document.addEventListener("DOMContentLoaded", fn);
+    }
+}
+docReady(function() {
+    // DOM is loaded and ready for manipulation here
+    document.getElementById('experiment_date').valueAsDate = new Date();
+});
+
+</script>
+{% endblock %}
+
 {% block content %}
 
 <form method="POST" action="/upload" enctype="multipart/form-data">
@@ -9,7 +29,8 @@
         <input class="field-container" type="submit" value="Submit">
         <input class="field-container" type="hidden" name="part_of" value="nmr">
     </div>
-    <p>Metadata</p>
+    <p>General Metadata</p>
+
     <div class="params-container">
         <div class="field-container">
             <div>Author</div>
@@ -36,19 +57,51 @@
             </select>
         </div>
         <div class="field-container">
+            <div>Date</div>
+            <input type="date" id="experiment_date" name="date">
+        </div>
+    </div>
+
+    <p>Automation Specific Metadata</p>
+
+    <div class="params-container">
+
+        <div class="field-container">
             <div>Result</div>
             <select name="result" class="selectpicker form-control">
+                <option value="-1">N/A</option>
                 <option value="0">GREEN</option>
                 <option value="1">YELLOW</option>
                 <option value="2">RED</option>
             </select>
         </div>
-        <div class="field-container">
-            <div>Date</div>
-            <input type="date" id="start" name="date">
-        </div>
-    </div>
 
+        <div class="field-container">
+            <div>Peroxide Value (mmol/kg)</div>
+            <input type="number" name="peroxide_value" step="0.00000001"/>
+        </div>
+
+        <div class="field-container">
+            <div>Anisidine Value (mmol/kg)</div>
+            <input type="number" name="anisidine_value" step="0.00000001"/>
+        </div>
+
+        <div class="field-container">
+            <div>Diffusion Coefficient D (10^-9 m*m/s)</div>
+            <input type="number" name="diffusion_coefficient" step="0.00000001"/>
+        </div>
+
+        <div class="field-container">
+            <div>Repetition</div>
+            <input type="number" name="repetition"/>
+        </div>
+
+        <div class="field-container">
+            <div>Oxidation Time (hours)</div>
+            <input type="number" name="ox_time"/>
+        </div>
+
+    </div>
 
 </form>
 
