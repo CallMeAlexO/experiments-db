@@ -7,11 +7,10 @@ import logging
 
 db = SQLAlchemy()
 log = logging
-template_dir = os.path.abspath('app/main/templates')
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, template_folder=template_dir)
+    app = Flask(__name__)
     app.config.from_object(config_class)
 
     db.init_app(app)
