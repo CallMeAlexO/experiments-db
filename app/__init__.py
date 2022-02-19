@@ -7,10 +7,11 @@ import logging
 
 db = SQLAlchemy()
 log = logging
+dirname = os.path.dirname(os.path.abspath(__file__))
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, static_folder='./static')
+    app = Flask(__name__, static_folder=os.path.join(dirname, "static"))
     app.config.from_object(config_class)
 
     db.init_app(app)
